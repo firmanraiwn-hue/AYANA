@@ -20,6 +20,9 @@ export function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "details">("description");
 
+  // Image Zoom State
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
+
   // Reviews State
   const [reviews, setReviews] = useState<Review[]>(product?.reviews || []);
   const [newReview, setNewReview] = useState({ author: "", rating: 5, comment: "" });
@@ -88,6 +91,23 @@ export function ProductDetail() {
     setNewReview({ author: "", rating: 5, comment: "" });
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setZoomStyle({
+      transformOrigin: `${x}% ${y}%`,
+      transform: 'scale(2.5)'
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomStyle({
+      transformOrigin: 'center center',
+      transform: 'scale(1)'
+    });
+  };
+
   return (
     <div className="pt-24 pb-24 container mx-auto px-4 md:px-8">
       {/* Breadcrumbs */}
@@ -117,7 +137,11 @@ export function ProductDetail() {
               </button>
             ))}
           </div>
-          <div className="relative aspect-[3/4] w-full bg-secondary/10 overflow-hidden group rounded-sm">
+          <div 
+            className="relative aspect-[3/4] w-full bg-secondary/10 overflow-hidden group rounded-sm cursor-crosshair"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
             <AnimatePresence mode="wait">
               <motion.img
                 key={selectedImage}
@@ -127,7 +151,8 @@ export function ProductDetail() {
                 transition={{ duration: 0.3 }}
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 cursor-zoom-in"
+                className="w-full h-full object-cover transition-transform duration-200 ease-out"
+                style={zoomStyle}
               />
             </AnimatePresence>
           </div>
